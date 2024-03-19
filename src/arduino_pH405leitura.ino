@@ -1,45 +1,24 @@
-float calibration = 0.00; //change this value to calibrate
-const int analogInPin = A0; 
-int sensorValue = 0; 
-unsigned long int avgValue; 
-float b;
-int buf[10],temp;
-
+const int PH_PIN = A0; // Pino analógico conectado ao sensor de pH
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(9600); // Inicializa a comunicação serial
 }
 
-
-// Função para pegar a média de 6 amostras da leitura do pino analógico A0
 void loop() {
-  for(int i=0;i<10;i++) 
-{ 
-    buf[i]=analogRead(analogInPin);
-    delay(30);
+  int sensorValue = analogRead(PH_PIN);
+
+  // Converte a voltagem em pH
+  float voltage = sensorValue * (5.0 / 1023.0);
+  float calculus = - 1023 * (voltage / 5.0) + 1023 ;
+  float pH = calculus * 14 / 1023;
+  float pHcalibrado = 2.0373*pH - 6.705; 
+
+  // Imprime o valor de pH no Serial Monitor
+  Serial.print("pH: ");
+  Serial.print(pHcalibrado);
+  Serial.print(" Voltagem: ");
+  Serial.println(voltage);
+
+  delay(1000); // Aguarda 1 segundo antes de ler novamente o valor de pH
 }
-  for(int i=0;i<9;i++)
-{
-  for(int j=i+1;j<10;j++)
-  {
-  if(buf[i]>buf[j])
-    {
-  temp=buf[i];
-  buf[i]=buf[j];
-  buf[j]=temp;
-    }
-  }
-}
 
-avgValue=0;
-
-for(int i=2;i<8;i++)
-avgValue += buf[i];
-float pHVol=(float)avgValue* 5.0/1023/6; // Tensão do pH, média a partir de 6 amostras
-
-float phValue = pHVol; // Ex: -5.70 * pHVol + calibration
-
-Serial.print("sensor = ");
-Serial.println(phValue);
-delay(500);
-}
